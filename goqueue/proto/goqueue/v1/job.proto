@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package goqueue.v1;
+
+option go_package = "github.com/abishekP101/goqueue/proto/goqueue/v1;goqueuev1";
+
+service JobService {
+  rpc EnqueueJob    (EnqueueJobRequest)    returns (EnqueueJobResponse);
+  rpc GetJobStatus  (GetJobStatusRequest)  returns (GetJobStatusResponse);
+  rpc CancelJob     (CancelJobRequest)     returns (CancelJobResponse);
+}
+
+message Job {
+  string id          = 1;
+  string queue       = 2;
+  string payload     = 3;
+  int32  priority    = 4;
+  int64  run_at      = 5;  // unix timestamp; 0 = now
+  int32  max_retries = 6;
+  string status      = 7;
+}
+
+message EnqueueJobRequest  { Job job = 1; }
+message EnqueueJobResponse { string job_id = 1; }
+
+message GetJobStatusRequest  { string job_id = 1; }
+message GetJobStatusResponse { Job job = 1; }
+
+message CancelJobRequest  { string job_id = 1; }
+message CancelJobResponse { bool cancelled = 1; }

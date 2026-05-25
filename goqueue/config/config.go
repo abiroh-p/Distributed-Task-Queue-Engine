@@ -1,0 +1,30 @@
+package config
+
+import "os"
+
+type Config struct {
+	PostgresDSN   string
+	RedisAddr     string
+	GRPCPort      string
+	HTTPPort      string
+	MetricsPort   string
+	WorkerCount   int
+}
+
+func Load() Config {
+	return Config{
+		PostgresDSN: getEnv("POSTGRES_DSN", "postgres://goqueue:goqueue@localhost:5432/goqueue?sslmode=disable"),
+		RedisAddr:   getEnv("REDIS_ADDR", "localhost:6379"),
+		GRPCPort:    getEnv("GRPC_PORT", "50051"),
+		HTTPPort:    getEnv("HTTP_PORT", "8080"),
+		MetricsPort: getEnv("METRICS_PORT", "9091"),
+		WorkerCount: 10,
+	}
+}
+
+func getEnv(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
+}
