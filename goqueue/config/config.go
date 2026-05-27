@@ -12,6 +12,8 @@ type Config struct {
 	HTTPPort      string
 	MetricsPort   string
 	WorkerCount   int
+	JWTSecret string
+
 }
 
 func Load() Config {
@@ -22,6 +24,8 @@ func Load() Config {
 		HTTPPort:    getEnv("HTTP_PORT", "8080"),
 		MetricsPort: getEnv("METRICS_PORT", "9091"),
 		WorkerCount: 10,
+		JWTSecret: getEnv("JWT_SECRET", "supersecret-dev-key"),
+
 	}
 }
 

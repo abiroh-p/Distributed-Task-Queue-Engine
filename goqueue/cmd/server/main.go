@@ -12,6 +12,8 @@ import (
     "github.com/abishekP101/goqueue/internal/api"
     "github.com/abishekP101/goqueue/internal/broker"
     "github.com/abishekP101/goqueue/internal/store"
+    "github.com/abishekP101/goqueue/internal/middleware"
+pb "github.com/abishekP101/goqueue/proto/goqueue/v1"
 )
 
 func main() {
@@ -46,8 +48,10 @@ func main() {
         log.Fatal().Err(err).Msg("failed to bind grpc port")
     }
 
-    grpcSrv := grpc.NewServer()
-    _ = srv // TODO: register gRPC handlers once proto is compiled
+    grpcSrv := grpc.NewServer(
+    grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor(cfg.JWTSecret)),
+)
+pb.RegisterJobServiceServer(grpcSrv, srv)
 
     log.Info().Str("port", cfg.GRPCPort).Msg("gRPC server listening")
 
