@@ -4,6 +4,8 @@ import (
     "github.com/redis/go-redis/v9"
 	"context"
 	"fmt"
+    "time"
+    "strings"
 )
 const (
     StreamHigh    = "goqueue:stream:high"
@@ -25,7 +27,8 @@ type Broker struct {
 
 func New(addr string) *Broker {
     rdb := redis.NewClient(&redis.Options{
-        Addr: addr,
+        Addr:        addr,
+        ReadTimeout: 10 * time.Second,
     })
     return &Broker{rdb: rdb}
 }
@@ -75,20 +78,23 @@ func (b *Broker) Consume(ctx context.Context, consumerName string) (*Message, er
     }
 
     results, err := b.rdb.XReadGroup(ctx, &redis.XReadGroupArgs{
-        Group:    GroupName,
-        Consumer: consumerName,
-        Streams:  streamArgs,
-        Count:    1,
-        Block:    2000,
+    Group:    GroupName,
+    Consumer: consumerName,
+    Streams:  streamArgs,
+    Count:    1,
+    Block:    3000,
     }).Result()
 
-    if err != nil {
-        if err == redis.Nil {
-            return nil, nil
-        }
-        return nil, fmt.Errorf("xreadgroup: %w", err)
+   if err != nil {
+    if err == redis.Nil {
+        return nil, nil
     }
-
+    // ignore i/o timeout — normal when no jobs arrive during block window
+    if strings.Contains(err.Error(), "i/o timeout") {
+        return nil, nil
+    }
+    return nil, fmt.Errorf("xreadgroup: %w", err)
+}
     for _, result := range results {
         for _, msg := range result.Messages {
             return &Message{
