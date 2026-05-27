@@ -136,3 +136,21 @@ func (s *Store) GetStalledJobs(ctx context.Context, olderThan time.Duration) ([]
     }
     return jobs, nil
 }
+
+func (s *Store) GetJobByID(ctx context.Context, jobID string) (Job, error) {
+    query := `
+        SELECT id, queue, payload, priority, status, attempts, max_retries, run_at, created_at
+        FROM jobs
+        WHERE id = $1
+    `
+    var j Job
+    err := s.db.QueryRowContext(ctx, query, jobID).Scan(
+        &j.ID, &j.Queue, &j.Payload, &j.Priority,
+        &j.Status, &j.Attempts, &j.MaxRetries,
+        &j.RunAt, &j.CreatedAt,
+    )
+    if err != nil {
+        return Job{}, fmt.Errorf("get job by id: %w", err)
+    }
+    return j, nil
+}

@@ -14,6 +14,7 @@ const (
     GroupName     = "goqueue-workers"
 )
 
+const DLQStream = "goqueue:stream:dlq"
 type Message struct {
     StreamID string
     Stream   string
@@ -111,5 +112,17 @@ func (b *Broker) Consume(ctx context.Context, consumerName string) (*Message, er
 
 func (b *Broker) Ack(ctx context.Context, stream, streamID string) error {
     return b.rdb.XAck(ctx, stream, GroupName, streamID).Err()
+}
+
+func (b *Broker) AddToDLQ(ctx context.Context, jobID, queue, payload, reason string) error {
+    return b.rdb.XAdd(ctx, &redis.XAddArgs{
+        Stream: DLQStream,
+        Values: map[string]interface{}{
+            "job_id":  jobID,
+            "queue":   queue,
+            "payload": payload,
+            "reason":  reason,
+        },
+    }).Err()
 }
 
