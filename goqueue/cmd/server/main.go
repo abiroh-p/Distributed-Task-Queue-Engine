@@ -14,6 +14,7 @@ import (
     "github.com/abishekP101/goqueue/internal/store"
     "github.com/abishekP101/goqueue/internal/middleware"
 pb "github.com/abishekP101/goqueue/proto/goqueue/v1"
+    "google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -52,6 +53,7 @@ func main() {
     grpc.UnaryInterceptor(middleware.UnaryAuthInterceptor(cfg.JWTSecret)),
 )
 pb.RegisterJobServiceServer(grpcSrv, srv)
+reflection.Register(grpcSrv)
 
     log.Info().Str("port", cfg.GRPCPort).Msg("gRPC server listening")
 
