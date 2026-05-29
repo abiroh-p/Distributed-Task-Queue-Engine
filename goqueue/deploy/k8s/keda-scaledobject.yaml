@@ -1,0 +1,29 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: goqueue-worker-scaler
+spec:
+  scaleTargetRef:
+    name: goqueue-worker
+  minReplicaCount: 1
+  maxReplicaCount: 20
+  cooldownPeriod: 30
+  triggers:
+    - type: redis-streams
+      metadata:
+        address: redis:6379
+        stream: goqueue:stream:high
+        consumerGroup: goqueue-workers
+        lagCount: "5"
+    - type: redis-streams
+      metadata:
+        address: redis:6379
+        stream: goqueue:stream:default
+        consumerGroup: goqueue-workers
+        lagCount: "10"
+    - type: redis-streams
+      metadata:
+        address: redis:6379
+        stream: goqueue:stream:low
+        consumerGroup: goqueue-workers
+        lagCount: "20"

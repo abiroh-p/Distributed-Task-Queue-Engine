@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goqueue-worker
+  labels:
+    app: goqueue-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: goqueue-worker
+  template:
+    metadata:
+      labels:
+        app: goqueue-worker
+    spec:
+      containers:
+        - name: worker
+          image: abiroh-p/goqueue-worker:latest
+          env:
+            - name: POSTGRES_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: goqueue-secrets
+                  key: postgres-dsn
+            - name: REDIS_ADDR
+              valueFrom:
+                secretKeyRef:
+                  name: goqueue-secrets
+                  key: redis-addr
+            - name: WORKER_COUNT
+              value: "10"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
