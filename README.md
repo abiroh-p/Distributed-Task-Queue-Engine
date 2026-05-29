@@ -10,7 +10,7 @@
 [![gRPC](https://img.shields.io/badge/gRPC-protobuf-244c5a?style=flat)](https://grpc.io)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat)](LICENSE)
 
-*Think Celery or BullMQ — but built from scratch in Go*
+*Think Celery or BullMQ, but built from scratch in Go*
 
 </div>
 
@@ -21,10 +21,10 @@
 goqueue is a distributed background job processing system built from first principles in Go. It demonstrates production-level backend engineering: distributed coordination, at-least-once delivery guarantees, graceful shutdown, real-time observability, and Kubernetes-native autoscaling.
 
 **Core design decisions:**
-- **Redis Streams** over simple `LPUSH/RPOP` — consumer groups give at-least-once delivery with a Pending Entry List (PEL). Crashed workers don't lose jobs.
-- **PostgreSQL as source of truth** — Redis handles speed, Postgres handles durability. Every job has an audit trail.
-- **Worker lease + heartbeat** — workers stamp jobs with ownership and expiry. The scheduler reclaims stalled leases automatically.
-- **Bounded goroutine pool** — semaphore-based concurrency limit prevents resource exhaustion under burst load.
+- **Redis Streams** over simple `LPUSH/RPOP`: consumer groups give at-least-once delivery with a Pending Entry List (PEL). Crashed workers don't lose jobs.
+- **PostgreSQL as source of truth**: Redis handles speed, Postgres handles durability. Every job has an audit trail.
+- **Worker lease + heartbeat**: workers stamp jobs with ownership and expiry. The scheduler reclaims stalled leases automatically.
+- **Bounded goroutine pool**: semaphore-based concurrency limit prevents resource exhaustion under burst load.
 
 ---
 
@@ -69,16 +69,16 @@ goqueue is a distributed background job processing system built from first princ
 ## Features
 
 **Queue mechanics**
-- Priority queues — `high`, `default`, `low` via separate Redis Streams
+- Priority queues : `high`, `default`, `low` via separate Redis Streams
 - At-least-once delivery with consumer groups and explicit ACK
 - Delayed job execution and cron scheduling
 - Exponential backoff with jitter on retry (prevents thundering herd)
 - Dead-letter queue (DLQ) with replay support
 
 **Reliability**
-- Worker lease + heartbeat pattern — stalled jobs auto-recovered by scheduler
-- Graceful shutdown — drains in-flight jobs before exit (`sync.WaitGroup`)
-- Bounded concurrency — semaphore-based goroutine pool
+- Worker lease + heartbeat pattern, stalled jobs auto-recovered by scheduler
+- Graceful shutdown: drains in-flight jobs before exit (`sync.WaitGroup`)
+- Bounded concurrency: semaphore-based goroutine pool
 - Database-level mutex on lease acquisition (prevents race conditions)
 
 **Observability**
@@ -234,6 +234,6 @@ go test ./internal/worker/... -v -race
 
 <div align="center">
 
-Built by [Abishek](https://github.com/abiroh-p) · B.Tech Computer Engineering · SIST
+Built by [Abishek](https://github.com/abiroh-p) · B.Tech Computer Engineering
 
 </div>
