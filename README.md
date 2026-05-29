@@ -224,7 +224,7 @@ go test ./internal/worker/... -v -race
 
 ## Roadmap
 
-- [ ] KEDA autoscaling — scale worker pods on Redis stream length
+- [x] KEDA autoscaling — scale worker pods on Redis stream length
 - [ ] Job handler registry — route jobs to typed handlers by queue name
 - [ ] grpc-gateway — REST transcoding for non-gRPC clients
 - [ ] Prometheus metrics — queue depth, job latency, worker utilization
