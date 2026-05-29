@@ -3,8 +3,7 @@ package dashboard
 import (
     "encoding/json"
     "net/http"
-    "time"
-
+    "github.com/abishekP101/goqueue/internal/events"
     "github.com/rs/zerolog/log"
     "golang.org/x/net/websocket"
 )
@@ -12,14 +11,6 @@ import (
 type Client struct {
     conn *websocket.Conn
     send chan []byte
-}
-
-type Event struct {
-    Type      string    `json:"type"`
-    JobID     string    `json:"job_id"`
-    Status    string    `json:"status"`
-    WorkerID  string    `json:"worker_id,omitempty"`
-    Timestamp time.Time `json:"timestamp"`
 }
 
 type Hub struct {
@@ -64,7 +55,7 @@ func (h *Hub) Run() {
     }
 }
 
-func (h *Hub) Publish(event Event) {
+func (h *Hub) Publish(event events.Event) {
     data, err := json.Marshal(event)
     if err != nil {
         log.Error().Err(err).Msg("failed to marshal event")

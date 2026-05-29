@@ -13,6 +13,8 @@ import (
     "github.com/abishekP101/goqueue/internal/broker"
     "github.com/abishekP101/goqueue/internal/store"
     "github.com/abishekP101/goqueue/internal/worker"
+    "github.com/abishekP101/goqueue/internal/dashboard"
+
 )
 
 func workerID() string {
@@ -38,7 +40,9 @@ func main() {
     log.Info().Msg("broker connected")
 
     id := workerID()
-    pool := worker.New(b, s, id, int64(cfg.WorkerCount))
+    hub := dashboard.NewHub()
+    go hub.Run()
+    pool := worker.New(b, s, id, int64(cfg.WorkerCount), hub)
 
     log.Info().Str("worker_id", id).Int("concurrency", cfg.WorkerCount).Msg("worker starting")
 

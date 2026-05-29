@@ -2,13 +2,14 @@ package worker
 
 import (
     "context"
-    "fmt"
     "sync"
-
+    "fmt"
     "golang.org/x/sync/semaphore"
     "github.com/rs/zerolog/log"
     "github.com/abishekP101/goqueue/internal/broker"
     "github.com/abishekP101/goqueue/internal/store"
+    "github.com/abishekP101/goqueue/internal/events"
+
 )
 
 type Pool struct {
@@ -18,15 +19,22 @@ type Pool struct {
     maxWorkers int64
     sem        *semaphore.Weighted
     wg         sync.WaitGroup
+    publisher   EventPublisher
+
+}
+type EventPublisher interface {
+    Publish(event events.Event)
 }
 
-func New(b *broker.Broker, s *store.Store, workerID string, maxWorkers int64) *Pool {
+func New(b *broker.Broker, s *store.Store, workerID string, maxWorkers int64, publisher EventPublisher) *Pool {
     return &Pool{
         broker:     b,
         store:      s,
         workerID:   workerID,
         maxWorkers: maxWorkers,
         sem:        semaphore.NewWeighted(maxWorkers),
+        publisher:  publisher,
+
     }
 }
 func (p *Pool) Run(ctx context.Context) {
@@ -70,6 +78,14 @@ func (p *Pool) process(ctx context.Context, msg *broker.Message) {
         Str("worker_id", p.workerID).
         Msg("processing job")
 
+    // publish running event
+    p.publisher.Publish(events.Event{
+        Type:     "job.running",
+        JobID:    msg.JobID,
+        Status:   "running",
+        WorkerID: p.workerID,
+    })
+
     if err := p.store.AcquireLease(ctx, msg.JobID, p.workerID); err != nil {
         log.Error().Err(err).Str("job_id", msg.JobID).Msg("failed to acquire lease")
         return
@@ -78,6 +94,14 @@ func (p *Pool) process(ctx context.Context, msg *broker.Message) {
     err := p.execute(msg)
     if err != nil {
         log.Error().Err(err).Str("job_id", msg.JobID).Msg("job failed")
+
+        p.publisher.Publish(events.Event{
+            Type:     "job.failed",
+            JobID:    msg.JobID,
+            Status:   "failed",
+            WorkerID: p.workerID,
+        })
+
         if storeErr := p.store.UpdateStatus(ctx, msg.JobID, "failed"); storeErr != nil {
             log.Error().Err(storeErr).Msg("failed to update status")
         }
@@ -96,6 +120,13 @@ func (p *Pool) process(ctx context.Context, msg *broker.Message) {
         log.Error().Err(err).Str("job_id", msg.JobID).Msg("failed to update status")
         return
     }
+
+    p.publisher.Publish(events.Event{
+        Type:     "job.succeeded",
+        JobID:    msg.JobID,
+        Status:   "succeeded",
+        WorkerID: p.workerID,
+    })
 
     log.Info().Str("job_id", msg.JobID).Msg("job completed successfully")
 }
