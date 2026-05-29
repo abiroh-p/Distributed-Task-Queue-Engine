@@ -7,14 +7,13 @@ import (
     "golang.org/x/sync/semaphore"
     "github.com/rs/zerolog/log"
     "github.com/abishekP101/goqueue/internal/broker"
-    "github.com/abishekP101/goqueue/internal/store"
     "github.com/abishekP101/goqueue/internal/events"
 
 )
 
 type Pool struct {
     broker     *broker.Broker
-    store      *store.Store
+    store      Store
     workerID   string
     maxWorkers int64
     sem        *semaphore.Weighted
@@ -22,11 +21,17 @@ type Pool struct {
     publisher   EventPublisher
 
 }
+type Store interface {
+    AcquireLease(ctx context.Context, jobID, workerID string) error
+    UpdateStatus(ctx context.Context, jobID, status string) error
+    IncrementAttempts(ctx context.Context, jobID string) error
+}
+
 type EventPublisher interface {
     Publish(event events.Event)
 }
 
-func New(b *broker.Broker, s *store.Store, workerID string, maxWorkers int64, publisher EventPublisher) *Pool {
+func New(b *broker.Broker, s Store, workerID string, maxWorkers int64, publisher EventPublisher) *Pool {
     return &Pool{
         broker:     b,
         store:      s,
