@@ -3,6 +3,7 @@ module github.com/abishekP101/goqueue
 go 1.25.0
 
 require (
+	github.com/alicebob/miniredis/v2 v2.38.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -11,6 +12,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/redis/go-redis/v9 v9.19.0 // indirect
 	github.com/rs/zerolog v1.35.1 // indirect
+	github.com/yuin/gopher-lua v1.1.1 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
